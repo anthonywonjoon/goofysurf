@@ -52,31 +52,63 @@ client.on(Events.InteractionCreate, async interaction => {
 		const { file } = await catResult.body.json();
 		interaction.editReply({ files: [{ attachment: file, name: 'cat.png' }] });
 	} else if (commandName === 'urban') {
-		const spot = interaction.options.getString('term');
+		const spot = interaction.options.getString('location');
+		if (!surfIdMap.get(spot)) { return interaction.editReply(`No results found for **${spot}**.`); }
 		const id = surfIdMap.get(spot);
+		const url = `https://services.surfline.com/kbyg/spots/forecasts/wave?spotId=${id}&days=1&intervalHours=3`;
+		console.log('----------------------------------')
+		console.log(spot);
+		console.log(id);
+		console.log(url);
 
-		const report = await request(`https://services.surfline.com/kbyg/spots/forecasts/wave?spotId=${id}`);
-		const { list } = await dictResult.body.json();
+		fetch(url)
+    		.then(res => res.json())
+    		.then(res => {
+        	data = (res.data['wave'][0]);
+			console.log(data);
 
-		if (!list.length) {
-			return interaction.editReply(`No results found for **${term}**.`);
-		}
+			const embed = new EmbedBuilder()
+						.setColor(0xEFFF00)
+						.setTitle(spot)
+						.addFields(
+							{ name: 'Time', value: data['timestamp'] },
+							{ name: 'Min and Max', value: `Min: ${data['surf']['min']}, Max: ${data['surf']['max']}` },
+							{
+								name: 'Human Relation',
+								value: data['surf']['humanRelation'],
+							},
+						);
+					
 
-		const [answer] = list;
-
-		const embed = new EmbedBuilder()
-			.setColor(0xEFFF00)
-			.setTitle(spot)
-			.addFields(
-				{ name: 'Definition', value: trim(answer.definition, 1024) },
-				{ name: 'Example', value: trim(answer.example, 1024) },
-				{
-					name: 'Rating',
-					value: `${answer.thumbs_up} thumbs up. ${answer.thumbs_down} thumbs down.`,
-				},
-			);
-		interaction.editReply({ embeds: [embed] });
+			return interaction.editReply({ embeds: [embed] });
+    	})
+    	.catch(e => {
+        	console.warn(e);
+    	});
 	}
+
+		// const report = await request(`https://services.surfline.com/kbyg/spots/forecasts/wave?spotId=${id}`);
+		// const { data } = await report.body.json();
+
+		
+
+		// console.log(report.body);
+
+		// // const embed = new EmbedBuilder()
+		// // 	.setColor(0xEFFF00)
+		// // 	.setTitle(spot)
+		// // 	.addFields(
+		// // 		{ name: 'Definition', value: trim(data.definition, 1024) },
+		// // 		{ name: 'Example', value: trim(answer.example, 1024) },
+		// // 		{
+		// // 			name: 'Rating',
+		// // 			value: `${answer.thumbs_up} thumbs up. ${answer.thumbs_down} thumbs down.`,
+		// // 		},
+		// // 	);
+		// // interaction.editReply({ embeds: [embed] });
+
+		interaction.editReply("Test");
+
 });
 
 
