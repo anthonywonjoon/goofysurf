@@ -2,8 +2,8 @@ const { SlashCommandBuilder } = require('discord.js');
 
 module.exports = {
 	data: new SlashCommandBuilder()
-		.setName('urban')
-		.setDescription('Replies with Pong!')
+		.setName('surfreport')
+		.setDescription('Replies with current surf report')
 		.addStringOption(option =>
 			option
 				.setName('location')
