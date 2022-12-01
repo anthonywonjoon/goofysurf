@@ -3,6 +3,7 @@ const path = require('node:path');
 const { request } = require('undici');
 const trim = (str, max) => (str.length > max ? `${str.slice(0, max - 3)}...` : str);
 
+// 2d array with spots & ids
 const surfSpots = [
 	['bowls', '5842041f4e65fad6a7708b42'],
 	['canoes', '5842041f4e65fad6a7708b35'],
@@ -10,9 +11,13 @@ const surfSpots = [
 	['makaha', '5842041f4e65fad6a7708dfd'],
 	['haleiwa', '5842041f4e65fad6a7708df5'],
 	['chuns', '5842041f4e65fad6a7708899'],
-	['pipeline', '5842041f4e65fad6a7708890']
+	['pipeline', '5842041f4e65fad6a7708890'],
+	["pua'ena", '584204204e65fad6a7709057'],
+	['vland', '5842041f4e65fad6a7708df4'],
+	['populars', '5842041f4e65fad6a7708b32']
 ];
 
+// hashmap to hold spot
 const surfIdMap = new Map();
 for (i = 0; i < surfSpots.length; i++) {
 	surfIdMap.set(surfSpots[i][0], surfSpots[i][1]);
@@ -25,11 +30,10 @@ const { token } = require('./config.json');
 // Create a new client instance
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
+// external command folders
 client.commands = new Collection();
-
 const commandsPath = path.join(__dirname, 'commands');
 const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
-
 for (const file of commandFiles) {
 	const filePath = path.join(commandsPath, file);
 	const command = require(filePath);
@@ -55,7 +59,7 @@ client.on(Events.InteractionCreate, async interaction => {
 
 	await interaction.deferReply();
 
-	if (commandName === 'surfreport') {
+	if (commandName === 'surfreport') { // for /surfreport command
 		
 		const spot = interaction.options.getString('location');
 		if (spot == null) { return interaction.editReply(`Please enter a location`); }
@@ -88,16 +92,15 @@ client.on(Events.InteractionCreate, async interaction => {
 			tideData = tideJSON.data['tides'][0];
 			tide = tideData['type'];
 
-
 			const embed = new EmbedBuilder()
 						.setColor(0x00FFFF)
 						.setTitle(spot.toUpperCase())
 						.addFields(
 							{ name: 'Time', value: JSON.stringify(waveData['timestamp']) },
 							{ name: 'Wave', value: `${JSON.stringify(waveData['surf']['min'])} ft - ${JSON.stringify(waveData['surf']['max'])} ft || ${JSON.stringify(waveData['surf']['humanRelation'])}` },
-							{ name: 'Wind', value: `Direction: ${windData['directionType']} || Speed & Gust: ${JSON.stringify(windData['speed']).substring(0,3)} mph gusts up to ${JSON.stringify(windData['gust']).substring(0,3)} mph` },
+							{ name: 'Wind', value: `Direction: ${windData['directionType']} || Speed & Gust: ${JSON.stringify(windData['speed']).substring(0,3)} kts gusts up to ${JSON.stringify(windData['gust']).substring(0,3)} kts` },
 							{ name: 'Tide', value: tide },
-							{ name: 'Scores', value: `Wave: ${optimalWave}, Wind: ${optimalWind}`}
+							{ name: 'Scores', value: `Wave: ${optimalWave}, Wind: ${optimalWind}` }
 						)
 						.setFooter({ text: 'To get available spots, do /surflist' });
 			
@@ -109,7 +112,7 @@ client.on(Events.InteractionCreate, async interaction => {
     	});	
 	}
 
-	if (commandName === 'surflist') {
+	if (commandName === 'surflist') { // for /surflist command
 		list = "";
 		for (i = 0; i < surfSpots.length; i++) {
 			list += (surfSpots[i][0] + ', ');
@@ -125,7 +128,6 @@ client.on(Events.InteractionCreate, async interaction => {
 		return interaction.editReply({ embeds: [embed] });
 	}
 });
-
 
 // Log in to Discord with your client's token
 client.login(token);

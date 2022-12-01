@@ -5,6 +5,5 @@ module.exports = {
 		.setName('surflist')
 		.setDescription('Replies with list of available surf spots'),
 	async execute(interaction) {
-
 	},
 };

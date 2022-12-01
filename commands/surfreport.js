@@ -9,6 +9,5 @@ module.exports = {
 				.setName('location')
 				.setDescription('where you want the report from')),
 	async execute(interaction) {
-
 	},
 };
